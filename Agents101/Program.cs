@@ -14,6 +14,7 @@ class Program
         // RunAgentDemo();
         //OCRToJsonAgent();
         await OCRToJsonAgentWithFileUploadAsync();
+        Console.WriteLine("process completed.");
     }
 
     private static IConfiguration LoadConfiguration()
@@ -101,7 +102,7 @@ class Program
         //Clean up test resources.
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
-        Console.ReadLine();
+
     }
     static void OCRToJsonAgent()
     {
@@ -179,7 +180,7 @@ class Program
         //Clean up test resources.
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
-        Console.ReadLine();
+    
     }
     static void RunAgentDemo()
     {
@@ -261,7 +262,7 @@ class Program
         }        //Clean up test resources.
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
-        Console.ReadLine();
+
     }
 
 
