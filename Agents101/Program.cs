@@ -52,10 +52,9 @@ class Program
 
 
         var msgContent = new List<MessageInputContentBlock>
-{
-    new MessageInputTextBlock("extract the text from the image into a valid json, use a flat hierarchy. "),
+        {
     new MessageInputImageFileBlock(new MessageImageFileParam(imgInfo.Value.Id))
-};
+        };
 
         //Ask a question of the Agent.
         persistentAgentsClient.Messages.CreateMessage(
@@ -103,7 +102,8 @@ class Program
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
         Console.ReadLine();
-    }    static void OCRToJsonAgent()
+    }
+    static void OCRToJsonAgent()
     {
         var config = LoadConfiguration();
         var projectEndpoint = config["AzureAI:ProjectEndpoint"];
@@ -180,7 +180,8 @@ class Program
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
         Console.ReadLine();
-    }    static void RunAgentDemo()
+    }
+    static void RunAgentDemo()
     {
         Console.WriteLine("Hello, World!");
 
