@@ -5,6 +5,7 @@ using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 class Program
 {
@@ -15,10 +16,19 @@ class Program
         await OCRToJsonAgentWithFileUploadAsync();
     }
 
+    private static IConfiguration LoadConfiguration()
+    {
+        return new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+    }
+
     static async Task OCRToJsonAgentWithFileUploadAsync()
     {
-        var projectEndpoint = "https://cua-resource.services.ai.azure.com/api/projects/cua";
-        var modelDeploymentName = "gpt-4o-mini";
+        var config = LoadConfiguration();
+        var projectEndpoint = config["AzureAI:ProjectEndpoint"];
+        var modelDeploymentName = config["AzureAI:ModelDeploymentName"];
 
         //Create a PersistentAgentsClient and PersistentAgent.
         PersistentAgentsClient persistentAgentsClient = new(projectEndpoint, new DefaultAzureCredential());
@@ -93,12 +103,11 @@ class Program
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
         Console.ReadLine();
-    }
-
-    static void OCRToJsonAgent()
+    }    static void OCRToJsonAgent()
     {
-        var projectEndpoint = "https://cua-resource.services.ai.azure.com/api/projects/cua";
-        var modelDeploymentName = "gpt-4o-mini";
+        var config = LoadConfiguration();
+        var projectEndpoint = config["AzureAI:ProjectEndpoint"];
+        var modelDeploymentName = config["AzureAI:ModelDeploymentName"];
 
         //Create a PersistentAgentsClient and PersistentAgent.
         PersistentAgentsClient persistentAgentsClient = new(projectEndpoint, new DefaultAzureCredential());
@@ -171,13 +180,13 @@ class Program
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
         Console.ReadLine();
-    }
-    static void RunAgentDemo()
+    }    static void RunAgentDemo()
     {
         Console.WriteLine("Hello, World!");
 
-        var projectEndpoint = "https://cua-resource.services.ai.azure.com/api/projects/cua";
-        var modelDeploymentName = "o3-mini";
+        var config = LoadConfiguration();
+        var projectEndpoint = config["AzureAI:ProjectEndpoint"];
+        var modelDeploymentName = config["AzureAI:ModelDeploymentName"];
 
         //Create a PersistentAgentsClient and PersistentAgent.
         PersistentAgentsClient persistentAgentsClient = new(projectEndpoint, new DefaultAzureCredential());
