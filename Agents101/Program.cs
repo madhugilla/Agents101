@@ -4,12 +4,95 @@ using Azure;
 using Azure.AI.Agents.Persistent;
 using Azure.Identity;
 using System.Diagnostics;
+using System.Threading.Tasks;
+
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         // RunAgentDemo();
-        OCRToJsonAgent();
+        //OCRToJsonAgent();
+        await OCRToJsonAgentWithFileUploadAsync();
+    }
+
+    static async Task OCRToJsonAgentWithFileUploadAsync()
+    {
+        var projectEndpoint = "https://cua-resource.services.ai.azure.com/api/projects/cua";
+        var modelDeploymentName = "gpt-4o-mini";
+
+        //Create a PersistentAgentsClient and PersistentAgent.
+        PersistentAgentsClient persistentAgentsClient = new(projectEndpoint, new DefaultAzureCredential());
+
+        await using var fs = File.OpenRead(@"images/parking.jpg");
+        var imgInfo = await persistentAgentsClient.Files.UploadFileAsync(
+            data: fs,
+            purpose: PersistentAgentFilePurpose.Agents,
+            filename: "parking.jpg");
+
+        //Give PersistentAgent a tool to execute code using CodeInterpreterToolDefinition.
+        PersistentAgent agent = persistentAgentsClient.Administration.CreateAgent(
+            model: modelDeploymentName,
+            name: "Image to JSON Agent",
+            instructions: "extract the text from the image into a valid json, use a flat hierarchy. " +
+                          "The output should be a valid JSON object with the text extracted from the image."
+        );
+
+        //Create a thread to establish a session between Agent and a User.
+        PersistentAgentThread thread = persistentAgentsClient.Threads.CreateThread();
+
+
+        var msgContent = new List<MessageInputContentBlock>
+{
+    new MessageInputTextBlock("extract the text from the image into a valid json, use a flat hierarchy. "),
+    new MessageInputImageFileBlock(new MessageImageFileParam(imgInfo.Value.Id))
+};
+
+        //Ask a question of the Agent.
+        persistentAgentsClient.Messages.CreateMessage(
+            thread.Id,
+            MessageRole.User, msgContent);
+
+        //Have Agent beging processing user's question with some additional instructions associated with the ThreadRun.
+        ThreadRun run = persistentAgentsClient.Runs.CreateRun(
+            thread.Id,
+            agent.Id
+            );
+
+        //Poll for completion.
+        do
+        {
+            Console.WriteLine($"Run Status: {run.Status}");
+            Thread.Sleep(TimeSpan.FromMilliseconds(1000));
+            run = persistentAgentsClient.Runs.GetRun(thread.Id, run.Id);
+        }
+        while (run.Status == RunStatus.Queued
+            || run.Status == RunStatus.InProgress
+            || run.Status == RunStatus.RequiresAction);
+        Console.WriteLine($"Run Status: {run.Status}");
+
+        //Get the messages in the PersistentAgentThread. Includes Agent (Assistant Role) and User (User Role) messages.
+        Pageable<PersistentThreadMessage> messages = persistentAgentsClient.Messages.GetMessages(
+            threadId: thread.Id,
+            order: ListSortOrder.Ascending);
+
+        //Display each message and open the image generated using CodeInterpreterToolDefinition.
+        foreach (PersistentThreadMessage threadMessage in messages)
+        {
+            foreach (MessageContent content in threadMessage.ContentItems)
+            {
+                switch (content)
+                {
+                    case MessageTextContent textItem:
+                        Console.WriteLine($"[{threadMessage.Role}]: {textItem.Text}");
+                        break;
+                }
+            }
+        }
+
+        //Clean up test resources.
+        persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
+        persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
+        Console.ReadLine();
     }
 
     static void OCRToJsonAgent()

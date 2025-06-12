@@ -16,6 +16,7 @@ A C# console application demonstrating the use of Azure AI Agents Persistent API
 ## Configuration
 
 Update the following variables in the code with your Azure AI Services details:
+
 - `projectEndpoint`: Your Azure AI Services project endpoint
 - `modelDeploymentName`: The deployed model name (e.g., "gpt-4o-mini", "o3-mini")
 
