@@ -14,8 +14,56 @@ class Program
         // RunAgentDemo();
         //OCRToJsonAgent();
         await OCRToJsonAgentWithFileUploadAsync();
+      //  MultiAgentDemo();
         Console.WriteLine("process completed.");
     }
+
+//     private static void MultiAgentDemo()
+//     {
+//         var config = LoadConfiguration();
+//         var projectEndpoint = config["AzureAI:ProjectEndpoint"];
+//         var modelDeploymentName = config["AzureAI:ModelDeploymentName"];
+
+//         PersistentAgentsClient client = new(projectEndpoint, new DefaultAzureCredential());
+//         PersistentAgent stockAgent = client.Administration.CreateAgent(
+//                 model: modelDeploymentName,
+//                 name: "stock_price_bot",
+//                 instructions: "Your job is to get the stock price of a company. If you don't know the realtime stock price, return the last known stock price."
+//             // tools: [...] tools that would be used to get stock prices
+//             );
+//         ConnectedAgentToolDefinition connectedAgentDefinition = new(new ConnectedAgentDetails(stockAgent.Id, stockAgent.Name, "Gets the stock price of a company"));
+
+//         PersistentAgent mainAgent = client.Administration.CreateAgent(
+//                 model: modelDeploymentName,
+//                 name: "stock_price_bot",
+//                 instructions: "Your job is to get the stock price of a company, using the available tools.",
+//                 tools: [connectedAgentDefinition]
+//             );
+
+// PersistentAgentThread thread = client.Threads.CreateThread();
+
+// // Create message to thread
+// PersistentThreadMessage message = client.Messages.CreateMessage(
+//     thread.Id,
+//     MessageRole.User,
+//     "What is the stock price of Microsoft?");
+
+// // Run the agent
+// ThreadRun run = client.Runs.CreateRun(thread, agent);
+// do
+// {
+//     Thread.Sleep(TimeSpan.FromMilliseconds(500));
+//     run = client.Runs.GetRun(thread.Id, run.Id);
+// }
+// while (run.Status == RunStatus.Queued
+//     || run.Status == RunStatus.InProgress);
+
+// // Confirm that the run completed successfully
+// if (run.Status != RunStatus.Completed)
+// {
+//     throw new Exception("Run did not complete successfully, error: " + run.LastError?.Message);
+// }
+//     }
 
     private static IConfiguration LoadConfiguration()
     {
@@ -40,7 +88,7 @@ class Program
             purpose: PersistentAgentFilePurpose.Agents,
             filename: "parking.jpg");
 
-        //Give PersistentAgent a tool to execute code using CodeInterpreterToolDefinition.
+       
         PersistentAgent agent = persistentAgentsClient.Administration.CreateAgent(
             model: modelDeploymentName,
             name: "Image to JSON Agent",
@@ -180,7 +228,7 @@ class Program
         //Clean up test resources.
         persistentAgentsClient.Threads.DeleteThread(threadId: thread.Id);
         persistentAgentsClient.Administration.DeleteAgent(agentId: agent.Id);
-    
+
     }
     static void RunAgentDemo()
     {
