@@ -82,7 +82,15 @@ class Program
         //Create a PersistentAgentsClient and PersistentAgent.
         PersistentAgentsClient persistentAgentsClient = new(projectEndpoint, new DefaultAzureCredential());
 
-        await using var fs = File.OpenRead(@"images/parking.jpg");
+        var imagePath = Path.Combine(AppContext.BaseDirectory, "images", "parking.jpg");
+        Console.WriteLine($"Looking for image at: {imagePath}");
+        
+        if (!File.Exists(imagePath))
+        {
+            throw new FileNotFoundException($"Image not found at path: {imagePath}");
+        }
+        
+        await using var fs = File.OpenRead(imagePath);
         var imgInfo = await persistentAgentsClient.Files.UploadFileAsync(
             data: fs,
             purpose: PersistentAgentFilePurpose.Agents,
